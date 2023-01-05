@@ -19,9 +19,11 @@
     {% with messages = get_flashed_messages() %}
 
     {% if messages %}
+
     {% for msg in messages %}
         <div id="msg">{{msg}}</div>
     {% endfor %}
+    
     {% endif %}
 
     {% block content %}
