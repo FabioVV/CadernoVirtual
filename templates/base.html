@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{{url_for('static', filename='app.css')}}">
+
+    <title>Fstick</title>
+    <meta name="keywords" content="Diario">
+    <meta name="description" content="Caderno virtual para registrar seus pensamentos e tarefas.">
+    <meta name="author" content="Fábio Varela">
+
+</head>
+<body>
+    {% include 'nav.html' %}
+
+    {% with messages = get_flashed_messages() %}
+
+    {% if messages %}
+    {% for msg in messages %}
+        <div id="msg">{{msg}}</div>
+    {% endfor %}
+    {% endif %}
+
+    {% block content %}
+    {% endblock %}
+
+    {% endwith %}
+
+    {% include 'footer.html' %}
+    <script src="{{url_for('static', filename='app.js')}}"></script>
+</body>
+</html>
