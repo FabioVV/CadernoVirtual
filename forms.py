@@ -6,7 +6,7 @@ from flask_ckeditor import CKEditorField
 
 class LoginForm(FlaskForm):
     username = StringField("Usuário", validators=[DataRequired()])
-    password = StringField("Senha", validators=[DataRequired()])
+    password = PasswordField("Senha", validators=[DataRequired()])
     submit = SubmitField('Logar')
 
 class Postform(FlaskForm):
@@ -18,6 +18,6 @@ class UsersForm(FlaskForm):
     email = StringField("Email", validators=[DataRequired()])
     about = TextAreaField("Sobre você...")
     profile_pic = FileField("Imagem de perfil")
-    password_hash = StringField("Senha", validators=[DataRequired(), equal_to('password_hash2', message='As senhas precisam ser iguais!')])
-    password_hash2 = StringField("Senha", validators=[DataRequired()])
+    password_hash = PasswordField("Senha", validators=[DataRequired(), equal_to('password_hash2', message='As senhas precisam ser iguais!')])
+    password_hash2 = PasswordField("Senha novamente", validators=[DataRequired()])
     submit = SubmitField('Criar conta')

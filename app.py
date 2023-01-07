@@ -1,6 +1,7 @@
+from functools import wraps
 from flask import Flask, url_for, render_template, redirect, request, session, flash
 from werkzeug.security import check_password_hash, generate_password_hash
-from flask_login import current_user, login_manager, login_user, logout_user, LoginManager, UserMixin
+from flask_login import current_user, login_user, logout_user, LoginManager, UserMixin, login_required
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
@@ -18,18 +19,33 @@ migrate = Migrate(app, db)
 UPLOAD_FOLDER = 'static'
 ckeditor = CKEditor(app)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+lg = LoginManager(app)
+lg.init_app(app)
+lg.login_view = 'login'
+@lg.user_loader
+def load_user(userid):
+    return Users.query.get(int(userid))
 
 
 @app.route('/', methods = ['GET', 'POST'])
-def index():
+def login():
     form = LoginForm()
 
     if request.method == 'POST':
         if form.validate_on_submit():
-            pass
-
+            username = Users.query.filter_by(username = form.username.data).first()
+            if username and check_password_hash(username.password_hash, form.password.data):
+                login_user(username)
+                flash('Logado com sucesso!')
+                return redirect(url_for('index'))
     return render_template('login.html', form = form)
 
+@app.route('/logout', methods=['GET','POST'])
+@login_required
+def logout():
+    logout_user()
+    flash('Deslogado com sucesso')
+    return redirect('/')
 
 @app.route('/register', methods = ['GET', 'POST'])
 def register():
@@ -48,6 +64,10 @@ def register():
 
     return render_template('register.html', form = form)
 
+@app.route('/home', methods = ['GET', 'POST'])
+@login_required
+def index():
+    return render_template('home.html')
 
 
 class Posts(db.Model):
@@ -64,7 +84,7 @@ class Users(db.Model, UserMixin):
     username = db.Column(db.String(28), nullable= False, unique = True)
     email = db.Column(db.String(70), nullable= False, unique = True)
     about = db.Column(db.Text(260), nullable= True)
-    password_hash = db.Column(db.String(15), nullable= False, unique = False)
+    password_hash = db.Column(db.String(150), nullable= False, unique = False)
     profile_pic = db.Column(db.String(380), nullable= True, unique = False)
     date_added = db.Column(db.DateTime ,default = datetime.utcnow, nullable= False, unique = False)
     post_count = db.relationship('Posts', backref = 'poster') 
