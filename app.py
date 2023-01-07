@@ -16,6 +16,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:guerra998@localhos
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 UPLOAD_FOLDER = 'static'
+ckeditor = CKEditor(app)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
@@ -24,7 +25,8 @@ def index():
     form = LoginForm()
 
     if request.method == 'POST':
-        pass
+        if form.validate_on_submit():
+            pass
 
     return render_template('login.html', form = form)
 
@@ -34,7 +36,15 @@ def register():
     form = UsersForm()
 
     if request.method == 'POST':
-        pass
+        if form.validate_on_submit():
+            username = Users.query.filter_by(username = form.username.data).first()
+            if not username:
+                hsps = generate_password_hash(form.password_hash.data, 'sha256')
+                user = Users(name = form.name.data, username = form.username.data, email = form.email.data, password_hash = hsps)
+                db.session.add(user)
+                db.session.commit()
+            flash('Conta criada com sucesso!')
+            redirect(url_for('index'))
 
     return render_template('register.html', form = form)
 
