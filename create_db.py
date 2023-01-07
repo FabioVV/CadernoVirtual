@@ -1,6 +1,7 @@
 import mysql.connector
 
 ## ROdar este arquivo apenas uma vez.
+##      JA FOI RODADO             #######################
 
 my = mysql.connector.connect(
     host='localhost',
