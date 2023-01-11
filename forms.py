@@ -5,9 +5,9 @@ from wtforms.validators import DataRequired, equal_to, length
 from flask_ckeditor import CKEditorField
 
 class LoginForm(FlaskForm):
-    username = StringField("Usuário", validators=[DataRequired()])
-    password = PasswordField("Senha", validators=[DataRequired()])
-    submit = SubmitField('Logar')
+    username = StringField("Username", validators=[DataRequired()])
+    password = PasswordField("Password", validators=[DataRequired()])
+    submit = SubmitField('Log in')
 
 class Postform(FlaskForm):
     pass 
@@ -20,4 +20,4 @@ class UsersForm(FlaskForm):
     profile_pic = FileField("Imagem de perfil")
     password_hash = PasswordField("Senha", validators=[DataRequired(), equal_to('password_hash2', message='As senhas precisam ser iguais!')])
     password_hash2 = PasswordField("Senha novamente", validators=[DataRequired()])
-    submit = SubmitField('Criar conta')
+    submit = SubmitField('Create account')
