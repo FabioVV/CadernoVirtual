@@ -6,7 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
 from flask_ckeditor import CKEditor
-from forms import LoginForm, UsersForm
+from forms import LoginForm, UsersForm, Postform
 import os
 
 
@@ -59,16 +59,31 @@ def register():
                 user = Users(name = form.name.data, username = form.username.data, email = form.email.data, password_hash = hsps)
                 db.session.add(user)
                 db.session.commit()
-            flash('Conta criada com sucesso!')
-            redirect(url_for('index'))
+                flash('Conta criada com sucesso!')
+                return redirect(url_for('index'))
 
     return render_template('register.html', form = form)
 
 @app.route('/home', methods = ['GET', 'POST'])
 @login_required
 def index():
-    return render_template('home.html')
+    post = Posts.query.order_by(Posts.date_posted)
+    return render_template('home.html', post = post)
 
+@app.route('/new-post', methods=['GET', 'POST'])
+def newpost():
+    form =  Postform()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            title = form.title.data
+            content = form.content.data
+            post = Posts(title = title, content = content)
+            db.session.add(post)
+            db.session.commit()
+            flash('New entry added to your journal')
+            return redirect(url_for('index'))
+        
+    return render_template('new-post.html', form = form)    
 
 class Posts(db.Model):
     id = db.Column(db.Integer, primary_key = True)

@@ -10,7 +10,10 @@ class LoginForm(FlaskForm):
     submit = SubmitField('Log in')
 
 class Postform(FlaskForm):
-    pass 
+    title = StringField("Title", validators=[DataRequired()])
+    content = CKEditorField("Content", validators=[DataRequired()])
+    submit = SubmitField("Create entry")
+
 
 class UsersForm(FlaskForm):
     name = StringField("Nome", validators=[DataRequired()])

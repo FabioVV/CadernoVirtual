@@ -6,6 +6,6 @@ setTimeout(() =>{
     a.addEventListener("transitionend",() =>{
         a.remove()
     })
-}, 1500)
+}, 1600)
 
 
