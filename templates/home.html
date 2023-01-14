@@ -6,7 +6,7 @@
 
 
 {% for post in post %} 
-  <div class="card mb-3" style="max-width: 720px;">
+  <div class="card mb-3" style="max-width: 610px;">
     <div class="row g-0">
       <div class="col-md-4">
         <img src="https://media.istockphoto.com/id/1140723067/photo/the-imposing-statue-of-emperor-marcus-aurelius-in-piazza-del-campidoglio-in-the-heart-of-rome.jpg?b=1&s=170667a&w=0&k=20&c=kD9u-h_a8mJuM0j73ynpGzt8bgb5nmwrPw7SvbAOZ8M=" class="img-fluid rounded-start" alt="...">
@@ -17,14 +17,17 @@
           <p class="card-text">
             <div class="btn-group" role="group" aria-label="Basic mixed styles example">
               <form action="/post" method="post">
+                {{ form.csrf_token }}
                 <input type="hidden" name="id" value="{{post['id']}}">
                 <button type="submit" class="btn btn-success">Open</button>
               </form>
               <form action="/edit-post" method="post">
+                {{ form.csrf_token }}
                 <input type="hidden" name="id" value="{{post['id']}}">
                 <button type="submit" class="btn btn-warning">Edit</button>
               </form>
               <form action="/delete-post" method="post">
+                {{ form.csrf_token }}
                 <input type="hidden" name="id" value="{{post['id']}}">
                 <button type="submit" class="btn btn-danger">Delete</button>
               </form>
@@ -33,6 +36,8 @@
             </div>
           </p>
           <p class="card-text"><small class="text-muted">Added at {{post.date_posted}}</small></p>
+          <hr>
+          <p class="card-text"><small class="text-muted">Last updated at {{post.date_updated}}</small></p>
         </div>
       </div>
     </div>

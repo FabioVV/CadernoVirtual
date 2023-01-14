@@ -6,7 +6,8 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime
 from flask_ckeditor import CKEditor
-from forms import LoginForm, UsersForm, Postform
+from forms import LoginForm, UsersForm, Postform, SearchForm
+from flask_wtf.csrf import CSRFProtect
 import os
 
 
@@ -25,7 +26,7 @@ lg.login_view = 'login'
 @lg.user_loader
 def load_user(userid):
     return Users.query.get(int(userid))
-
+csrf = CSRFProtect(app)
 
 @app.route('/', methods = ['GET', 'POST'])
 def login():
@@ -67,7 +68,6 @@ def register():
 @app.route('/home', methods = ['GET', 'POST'])
 @login_required
 def index():
-    
     pos = Posts.query.filter_by(poster_id = current_user.id)
     return render_template('home.html', post = pos)
 
@@ -93,7 +93,7 @@ def delete_post():
 
     id = request.form.get('id')
     post = Posts.query.filter_by(id = id).first()
-    if post:
+    if post and post.poster.id == current_user.id:
         db.session.delete(post)
         db.session.commit()
         flash('Entry deleted.')
@@ -109,11 +109,12 @@ def edit_post():
     id = request.form.get('id')
     post = Posts.query.get_or_404(id) 
     
-    if post:
+    if post and post.poster.id == current_user.id:
         if form.validate_on_submit():
     
             post.title = form.title.data
             post.content = form.content.data
+            post.date_updated = datetime.utcnow()
             db.session.add(post)
             db.session.commit()
             flash('Entry edited.')
@@ -124,12 +125,30 @@ def edit_post():
 
     return render_template('edit-post.html',form = form , id = post.id)
 
+
+@app.route('/search', methods=['POST'])
+@login_required
+def search():
+    form = SearchForm()
+    posts = Posts.query
+    if form.validate_on_submit:
+        #searched = form.search.data
+        searched = request.form.get('search')
+        posts = posts.filter(Posts.title.like('%' + searched + '%'))
+        posts = posts.order_by(Posts.title).all()
+        return render_template('home.html', post = posts)
+
+@app.context_processor
+def base():
+    form = SearchForm()
+    return dict(form = form)
+
 @app.route('/post', methods=['POST'])
 @login_required
 def post():
     id = request.form.get("id")
-    if id:
-        post = Posts.query.filter_by(id = id).first()
+    post = Posts.query.filter_by(id = id).first()
+    if id and post.poster.id == current_user.id:
         return render_template('post.html', post = post)
     
 

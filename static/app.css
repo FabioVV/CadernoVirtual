@@ -4,6 +4,9 @@
     box-sizing: border-box;
 }
 
+html{
+    scroll-behavior: smooth;
+}
 
 .h1.fw-bold.mb-0{
 padding: 1rem;
@@ -13,6 +16,7 @@ padding: 1rem;
 img{
     max-width: 100%;
     height: auto;
+    border-radius: 20%;
 }
 
 li{

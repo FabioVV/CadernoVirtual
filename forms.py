@@ -24,3 +24,7 @@ class UsersForm(FlaskForm):
     password_hash = PasswordField("Senha", validators=[DataRequired(), equal_to('password_hash2', message='As senhas precisam ser iguais!')])
     password_hash2 = PasswordField("Senha novamente", validators=[DataRequired()])
     submit = SubmitField('Create account')
+
+class SearchForm(FlaskForm):
+    q = StringField("Search", validators=[DataRequired()])
+    submit = SubmitField('Search')

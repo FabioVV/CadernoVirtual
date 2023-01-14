@@ -15,6 +15,7 @@
 
                         <h3 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Edit entry.</h3>
                         {{ form.hidden_tag() }}
+                        {{ form.csrf_token }}
                         <input type="hidden" name="id" value="{{id}}">
                         <div class="form-outline mb-4">
 
