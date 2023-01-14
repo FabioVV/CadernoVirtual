@@ -10,6 +10,7 @@ from forms import LoginForm, UsersForm, Postform, SearchForm
 from flask_wtf.csrf import CSRFProtect
 import os
 
+#Download pdf with content
 
 app = Flask(__name__)
 app.secret_key = 'secreto'
@@ -154,7 +155,7 @@ def post():
 
 class Posts(db.Model):
     id = db.Column(db.Integer, primary_key = True)
-    title = db.Column(db.String(28), nullable= False)
+    title = db.Column(db.String(60), nullable= False)
     content = db.Column(db.Text)
     date_posted = db.Column(db.DateTime, default = datetime.utcnow)
     date_updated = db.Column(db.DateTime, default = datetime.utcnow)
