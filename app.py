@@ -60,15 +60,16 @@ def register():
                 db.session.add(user)
                 db.session.commit()
                 flash('Account created!')
-                return redirect(url_for('index'))
+                return redirect(url_for('login'))
 
     return render_template('register.html', form = form)
 
 @app.route('/home', methods = ['GET', 'POST'])
 @login_required
 def index():
-    post = Posts.query.order_by(Posts.date_posted)
-    return render_template('home.html', post = post)
+    
+    pos = Posts.query.filter_by(poster_id = current_user.id)
+    return render_template('home.html', post = pos)
 
 @app.route('/new-post', methods=['GET', 'POST'])
 @login_required
@@ -78,7 +79,7 @@ def newpost():
         if form.validate_on_submit():
             title = form.title.data
             content = form.content.data
-            post = Posts(title = title, content = content)
+            post = Posts(title = title, content = content, poster_id = current_user.id)
             db.session.add(post)
             db.session.commit()
             flash('New entry added to your journal')
@@ -117,6 +118,7 @@ def edit_post():
             db.session.commit()
             flash('Entry edited.')
             return redirect(url_for('index'))
+
         form.title.data = post.title
         form.content.data = post.content
 
@@ -147,8 +149,11 @@ class Users(db.Model, UserMixin):
     about = db.Column(db.Text(260), nullable= True)
     password_hash = db.Column(db.String(150), nullable= False, unique = False)
     profile_pic = db.Column(db.String(380), nullable= True, unique = False)
+    admin = db.Column(db.Boolean, nullable = False, default = False)
     date_added = db.Column(db.DateTime ,default = datetime.utcnow, nullable= False, unique = False)
     post_count = db.relationship('Posts', backref = 'poster') 
 
 if __name__ == '__main__':
     app.run('0.0.0.0',port=5002,debug=True)
+
+    #posts.poster_id
