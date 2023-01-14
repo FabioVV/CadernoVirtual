@@ -2,16 +2,43 @@
 
 {% block content %}
 
-{% for post in post %}
+<div class="content">
 
-<div class="card mb-3">
-    <img src="..." class="card-img-top" alt="...">
-    <div class="card-body">
-      <h5 class="card-title">{{post.title}}</h5>
-      <p class="card-text">{{post.content}}</p>
-      <p class="card-text"><small class="text-muted">Last updated {{post.date_updated}}</small></p>
+
+{% for post in post %} 
+  <div class="card mb-3" style="max-width: 720px;">
+    <div class="row g-0">
+      <div class="col-md-4">
+        <img src="https://media.istockphoto.com/id/1140723067/photo/the-imposing-statue-of-emperor-marcus-aurelius-in-piazza-del-campidoglio-in-the-heart-of-rome.jpg?b=1&s=170667a&w=0&k=20&c=kD9u-h_a8mJuM0j73ynpGzt8bgb5nmwrPw7SvbAOZ8M=" class="img-fluid rounded-start" alt="...">
+      </div>
+      <div class="col-md-8">
+        <div class="card-body">
+          <h5 class="card-title">{{post.title}}</h5>
+          <p class="card-text">
+            <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+              <form action="/post" method="post">
+                <input type="hidden" name="id" value="{{post['id']}}">
+                <button type="submit" class="btn btn-success">Open</button>
+              </form>
+              <form action="/edit-post" method="post">
+                <input type="hidden" name="id" value="{{post['id']}}">
+                <button type="submit" class="btn btn-warning">Edit</button>
+              </form>
+              <form action="/delete-post" method="post">
+                <input type="hidden" name="id" value="{{post['id']}}">
+                <button type="submit" class="btn btn-danger">Delete</button>
+              </form>
+             
+
+            </div>
+          </p>
+          <p class="card-text"><small class="text-muted">Added at {{post.date_posted}}</small></p>
+        </div>
+      </div>
     </div>
   </div>
 
+
 {% endfor %}
+</div>
 {% endblock %}

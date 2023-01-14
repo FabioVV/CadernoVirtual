@@ -36,7 +36,7 @@ def login():
             username = Users.query.filter_by(username = form.username.data).first()
             if username and check_password_hash(username.password_hash, form.password.data):
                 login_user(username)
-                flash('Logado com sucesso!')
+                flash('Logged in!')
                 return redirect(url_for('index'))
     return render_template('login.html', form = form)
 
@@ -44,7 +44,7 @@ def login():
 @login_required
 def logout():
     logout_user()
-    flash('Deslogado com sucesso')
+    flash('Logged out')
     return redirect('/')
 
 @app.route('/register', methods = ['GET', 'POST'])
@@ -59,7 +59,7 @@ def register():
                 user = Users(name = form.name.data, username = form.username.data, email = form.email.data, password_hash = hsps)
                 db.session.add(user)
                 db.session.commit()
-                flash('Conta criada com sucesso!')
+                flash('Account created!')
                 return redirect(url_for('index'))
 
     return render_template('register.html', form = form)
@@ -71,6 +71,7 @@ def index():
     return render_template('home.html', post = post)
 
 @app.route('/new-post', methods=['GET', 'POST'])
+@login_required
 def newpost():
     form =  Postform()
     if request.method == 'POST':
@@ -83,7 +84,52 @@ def newpost():
             flash('New entry added to your journal')
             return redirect(url_for('index'))
         
-    return render_template('new-post.html', form = form)    
+    return render_template('new-post.html', form = form)   
+
+@app.route('/delete-post',methods=['POST']) 
+@login_required
+def delete_post():
+
+    id = request.form.get('id')
+    post = Posts.query.filter_by(id = id).first()
+    if post:
+        db.session.delete(post)
+        db.session.commit()
+        flash('Entry deleted.')
+        return redirect(url_for('index'))
+    else:
+        flash('No entry found!')
+        return redirect(url_for('index'))
+
+
+@app.route('/edit-post', methods=['GET','POST'])
+def edit_post():
+    form = Postform()
+    id = request.form.get('id')
+    post = Posts.query.get_or_404(id) 
+    
+    if post:
+        if form.validate_on_submit():
+    
+            post.title = form.title.data
+            post.content = form.content.data
+            db.session.add(post)
+            db.session.commit()
+            flash('Entry edited.')
+            return redirect(url_for('index'))
+        form.title.data = post.title
+        form.content.data = post.content
+
+    return render_template('edit-post.html',form = form , id = post.id)
+
+@app.route('/post', methods=['POST'])
+@login_required
+def post():
+    id = request.form.get("id")
+    if id:
+        post = Posts.query.filter_by(id = id).first()
+        return render_template('post.html', post = post)
+    
 
 class Posts(db.Model):
     id = db.Column(db.Integer, primary_key = True)

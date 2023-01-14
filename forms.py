@@ -12,7 +12,7 @@ class LoginForm(FlaskForm):
 class Postform(FlaskForm):
     title = StringField("Title", validators=[DataRequired()])
     content = CKEditorField("Content", validators=[DataRequired()])
-    submit = SubmitField("Create entry")
+    submit = SubmitField("Finish")
 
 
 class UsersForm(FlaskForm):

@@ -10,6 +10,11 @@ padding: 1rem;
 
 }
 
+img{
+    max-width: 100%;
+    height: auto;
+}
+
 li{
 padding-right:1.5rem;
 padding-left: 1.5rem;
@@ -31,6 +36,26 @@ padding-left: 1.5rem;
     transition: transform 1s 0s;
 }
 
-.form-control.x{
- 
+
+.content{
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    align-content: space-around;
+    margin-top: 2rem;
+    gap: 1rem;
+    padding: 1rem;
+    
+}
+
+.container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    flex-wrap: wrap;
+}
+
+.text{
+    text-align: justify;
 }
