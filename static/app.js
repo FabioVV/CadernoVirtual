@@ -9,3 +9,14 @@ setTimeout(() =>{
 }, 1300)
 
 
+let input = document.querySelector('#te')
+  input.addEventListener('input', async function(){
+    let response = await fetch('/searchh?q=' + input.value)
+    let shows = await response.json()
+    let html = ''
+    for(let x in shows){
+      let title = shows[x].title.replace('<', '&lt;')
+      html += '<li>' + title + '</li>'
+    }
+    document.querySelector('ul').innerHTML = html
+  })

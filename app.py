@@ -133,7 +133,6 @@ def search():
     form = SearchForm()
     posts = Posts.query
     if form.validate_on_submit:
-        #searched = form.search.data
         searched = request.form.get('search')
         posts = posts.filter(Posts.title.like('%' + searched + '%'))
         posts = posts.order_by(Posts.title).all()

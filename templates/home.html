@@ -3,9 +3,8 @@
 {% block content %}
 
 <div class="content">
+{% for post in post %}
 
-
-{% for post in post %} 
   <div class="card mb-3" style="max-width: 610px;">
     <div class="row g-0">
       <div class="col-md-4">
@@ -48,5 +47,6 @@
 
 
 {% endfor %}
+
 </div>
 {% endblock %}
