@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import Flask, url_for, render_template, redirect, request, session, flash
+from flask import Flask, url_for, render_template, redirect, request, session, flash, jsonify
 from werkzeug.security import check_password_hash, generate_password_hash
 from flask_login import current_user, login_user, logout_user, LoginManager, UserMixin, login_required
 from flask_sqlalchemy import SQLAlchemy
@@ -8,15 +8,24 @@ from datetime import datetime
 from flask_ckeditor import CKEditor
 from forms import LoginForm, UsersForm, Postform, SearchForm
 from flask_wtf.csrf import CSRFProtect
+from flask_marshmallow import Marshmallow
 import os
 
 #Download pdf with content
+#Generate excel
+#Todo list
+#Finance helper
+#FLASK aDMIN
+#FInish new search <<<
 
 app = Flask(__name__)
+
+
 app.secret_key = 'secreto'
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:guerra998@localhost/caderno'
 db = SQLAlchemy(app)
+ma = Marshmallow(app)
 migrate = Migrate(app, db)
 UPLOAD_FOLDER = 'static'
 ckeditor = CKEditor(app)
@@ -127,16 +136,28 @@ def edit_post():
     return render_template('edit-post.html',form = form , id = post.id)
 
 
-@app.route('/search', methods=['POST'])
-@login_required
+@app.route('/index')
+def ind():
+    return render_template('index.html')
+
+
+@app.route('/search')
 def search():
-    form = SearchForm()
     posts = Posts.query
-    if form.validate_on_submit:
-        searched = request.form.get('search')
-        posts = posts.filter(Posts.title.like('%' + searched + '%'))
-        posts = posts.order_by(Posts.title).all()
-        return render_template('home.html', post = posts)
+    searched = request.args.get('q')
+    
+    posts = posts.filter(Posts.title.like('%' + searched + '%'))
+    posts = posts.filter_by(poster_id = current_user.id)
+    posts = posts.order_by(Posts.title).all()
+  
+    output = jsonify([{"title":posts.title }for posts in posts])
+    if not searched:    
+        output = Posts.query.filter_by(poster_id = current_user.id)
+        output = jsonify([{"title":posts.title }for posts in posts])
+        return output
+            
+    return output
+
 
 @app.context_processor
 def base():
@@ -159,6 +180,12 @@ class Posts(db.Model):
     date_posted = db.Column(db.DateTime, default = datetime.utcnow)
     date_updated = db.Column(db.DateTime, default = datetime.utcnow)
     poster_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+#Marshmallow eschema
+class PostsSchema(ma.Schema):
+    class Meta:
+        model = Posts
+##
 
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key = True)

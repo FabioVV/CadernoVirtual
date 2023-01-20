@@ -1,21 +1,23 @@
 {% extends 'base.html' %}
 
 {% block content %}
-
-<div class="content">
+<input class="form-control me-2" name="search" type="search" placeholder="Search" aria-label="Search">
+<div id="content">
+ 
 {% for post in post %}
 
-  <div class="card mb-3" style="max-width: 610px;">
+  <div class="card mb-3" style="max-width: 610px;" id="page">
     <div class="row g-0">
       <div class="col-md-4">
         <img src="https://media.istockphoto.com/id/1140723067/photo/the-imposing-statue-of-emperor-marcus-aurelius-in-piazza-del-campidoglio-in-the-heart-of-rome.jpg?b=1&s=170667a&w=0&k=20&c=kD9u-h_a8mJuM0j73ynpGzt8bgb5nmwrPw7SvbAOZ8M=" class="img-fluid rounded-start" alt="...">
       </div>
       <div class="col-md-8">
         <div class="card-body">
-          <h5 class="card-title">
+          <div  id="title"><h5 class="card-title" id="cardtitle">
           
             {{post.title}}
           </h5>
+          </div>
           <p class="card-text">
             <div class="btn-group" role="group" aria-label="Basic mixed styles example">
               <form action="/post" method="post">
