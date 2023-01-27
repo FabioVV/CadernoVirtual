@@ -17,7 +17,7 @@
         integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
 </head>
 
-<body>
+<body id='body'>
     {% include 'nav.html' %}
 
     {% with messages = get_flashed_messages() %}
@@ -50,14 +50,57 @@
         input.addEventListener('input', async function () {
             let response = await fetch('/search?q=' + input.value)
             let posts = await response.json()
-            //console.log(posts)    
+
+            console.log(posts)    
             let html = ''
             for (let x in posts) {
                 let title = posts[x].title.replace('<', '&lt;').replace('&', '&amp')
-                html += '<h5 class="card-title">' + title + '</h5>'
+                let datep = posts[x].date_posted
+                let dateu = posts[x].date_updated
+                let id = posts[x].id
+                //html += '<h5 class="card-title">' + title + '</h5>'
+                html +=`<div class="card mb-3" style="max-width: 610px;" id="page">
+                    <div class="row g-0">
+                      <div class="col-md-4">
+                        <img src="https://media.istockphoto.com/id/1140723067/photo/the-imposing-statue-of-emperor-marcus-aurelius-in-piazza-del-campidoglio-in-the-heart-of-rome.jpg?b=1&s=170667a&w=0&k=20&c=kD9u-h_a8mJuM0j73ynpGzt8bgb5nmwrPw7SvbAOZ8M=" class="img-fluid rounded-start" alt="...">
+                      </div>
+                      <div class="col-md-8">
+                        <div class="card-body">
+                          <div  id="title"><h5 class="card-title" id="cardtitle">
+                            ${title}
+                          </h5>
+                          </div>
+                          <p class="card-text">
+                            <div class="btn-group" role="group" aria-label="Basic mixed styles example">
+                              <form action="/post" method="post">
+                                {{ form.csrf_token }}
+                                <input type="hidden" name="id" value="${id}">
+                                <button type="submit" class="btn btn-success">Open</button>
+                              </form>
+                              <form action="/edit-post" method="post">
+                                {{ form.csrf_token }}
+                                <input type="hidden" name="id" value="${id}">
+                                <button type="submit" class="btn btn-warning">Edit</button>
+                              </form>
+                              <form action="/delete-post" method="post">
+                                {{ form.csrf_token }}
+                                <input type="hidden" name="id" value="${id}">
+                                <button type="submit" class="btn btn-danger">Delete</button>
+                              </form>
+                             
+                
+                            </div>
+                          </p>
+                          <p class="card-text"><small class="text-muted">Added at ${datep}</small></p>
+                          <hr>
+                          <p class="card-text"><small class="text-muted">Last updated at ${dateu}</small></p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>`
                 
             }
-            document.getElementById('title').innerHTML = html
+            document.getElementById('content').innerHTML = html
         })
 
         const all = document.getElementById('page').children

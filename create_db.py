@@ -1,12 +1,12 @@
 import mysql.connector
 
-## ROdar este arquivo apenas uma vez.
-##      JA FOI RODADO             #######################
+# ROdar este arquivo apenas uma vez.
+
 
 my = mysql.connector.connect(
     host='localhost',
     user='root',
-    passwd = 'guerra998'
+    passwd='guerra998'
 )
 
 c = my.cursor()
