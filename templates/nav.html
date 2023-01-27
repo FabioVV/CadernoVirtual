@@ -15,15 +15,17 @@
               Account actions
             </a>
             <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">Profile</a></li>
+              {% if current_user.admin %}
+                <li><a class="dropdown-item" href="#">Admin Dashboard</a></li>
+              {% else %}
+                <li><a class="dropdown-item" href="#">Profile</a></li>
+              {% endif %}
+              
               <li><hr class="dropdown-divider"></li>
               <li><a class="dropdown-item" href="{{url_for('logout')}}">Logout</a></li>
             </ul>
           </li>
         </ul>
-        
-        
-          
       </div>
     </div>
   </nav>

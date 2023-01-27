@@ -205,7 +205,7 @@ class Users(db.Model, UserMixin):
     profile_pic = db.Column(db.String(380), nullable=True, unique=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
     date_added = db.Column(
-        db.DateTime, default=datetime.utcnow, nullable=False, unique=False)
+    db.DateTime, default=datetime.utcnow, nullable=False, unique=False)
     post_count = db.relationship('Posts', backref='poster')
 
 
