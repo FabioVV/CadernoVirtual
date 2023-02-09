@@ -3,6 +3,8 @@ from datetime import datetime
 
 from flask import (Flask, flash, jsonify, redirect, render_template, request,
                    session, url_for)
+from flask_admin import Admin
+from flask_admin.contrib.sqla import ModelView
 from flask_ckeditor import CKEditor
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
@@ -14,11 +16,10 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from forms import LoginForm, Postform, SearchForm, UsersForm
 
 # Download pdf with content
-# Generate excel
 # Todo list
 # Finance helper
 # FLASK aDMIN
-# FInish new search <<<
+
 
 app = Flask(__name__)
 app.secret_key = 'secreto'
@@ -26,10 +27,13 @@ app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:guerra998@localhost/caderno'
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
+admin = Admin(app)
+
 
 UPLOAD_FOLDER = 'static'
 ckeditor = CKEditor(app)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 
 lg = LoginManager(app)
 lg.init_app(app)
@@ -55,6 +59,12 @@ def login():
                 login_user(username)
                 flash('Logged in!')
                 return redirect(url_for('index'))
+            elif username and not check_password_hash(username.password_hash, form.password.data):
+                flash('Wrong Password!')
+                return redirect(url_for('login'))
+            else:
+                flash('Wrong Username!')
+                return redirect(url_for('login'))
     return render_template('login.html', form=form)
 
 
@@ -158,23 +168,15 @@ def ind():
 
 @app.route('/search')
 def search():
-    posts = Posts.query
     searched = request.args.get('q')
 
-    posts = posts.filter(Posts.title.like('%' + searched + '%'))
-    posts = posts.filter_by(poster_id=current_user.id)
-    posts = posts.order_by(Posts.title).all()
+    posts = Posts.query.filter(Posts.title.like(
+        '%' + searched + '%')).filter_by(poster_id=current_user.id).order_by(Posts.title).all()
 
     output = jsonify(
-        [{"title": posts.title, "id": posts.id, "date_posted": posts.date_posted, "date_updated": posts.date_updated}for posts in posts])
+        [{"id": posts.id, "title": posts.title, "date_posted": posts.date_posted, "date_updated": posts.date_updated}for posts in posts])
 
     return output
-
-
-@app.context_processor
-def base():
-    form = SearchForm()
-    return dict(form=form)
 
 
 @app.route('/post', methods=['POST'])
@@ -184,6 +186,24 @@ def post():
     post = Posts.query.filter_by(id=id).first()
     if id and post.poster.id == current_user.id:
         return render_template('post.html', post=post)
+
+
+@app.route('/admin')
+@login_required
+def admin():
+    return render_template('admin_profile.html')
+
+
+@app.route('/admin')
+@login_required
+def profile():
+    return render_template('profile.html')
+
+
+@app.context_processor
+def base():
+    form = SearchForm()
+    return dict(form=form)
 
 
 class Posts(db.Model):
@@ -205,9 +225,12 @@ class Users(db.Model, UserMixin):
     profile_pic = db.Column(db.String(380), nullable=True, unique=False)
     admin = db.Column(db.Boolean, nullable=False, default=False)
     date_added = db.Column(
-    db.DateTime, default=datetime.utcnow, nullable=False, unique=False)
+        db.DateTime, default=datetime.utcnow, nullable=False, unique=False)
     post_count = db.relationship('Posts', backref='poster')
 
+
+# Admin Views
+#admin.add_view(ModelView(Users, db.session))
 
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5002, debug=True)

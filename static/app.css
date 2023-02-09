@@ -63,3 +63,9 @@ padding-left: 1.5rem;
 .text{
     text-align: justify;
 }
+
+
+.dark-mode{
+    background-color: rgb(40, 39, 39);
+    color: white;
+}

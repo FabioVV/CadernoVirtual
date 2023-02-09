@@ -1,32 +1,38 @@
 {% if current_user.is_authenticated %}
-<nav class="navbar navbar-expand-lg bg-body-tertiary">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="{{url_for('index')}}">V</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-          <li class="nav-item">
-            <a class="nav-link" href="{{url_for('newpost')}}">New entry</a>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              Account actions
-            </a>
-            <ul class="dropdown-menu">
-              {% if current_user.admin %}
-                <li><a class="dropdown-item" href="#">Admin Dashboard</a></li>
-              {% else %}
-                <li><a class="dropdown-item" href="#">Profile</a></li>
-              {% endif %}
-              
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="{{url_for('logout')}}">Logout</a></li>
-            </ul>
-          </li>
-        </ul>
-      </div>
+<nav class="navbar navbar-expand-lg">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="{{url_for('index')}}">Virtual Royal</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+      aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link" href="{{url_for('newpost')}}">New entry</a>
+        </li>
+        <li class="nav-item dropdown">
+          <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+            Account actions
+          </a>
+          <ul class="dropdown-menu">
+            {% if current_user.admin %}
+            <li><a class="dropdown-item" href="{{url_for('admin')}}">Admin Dashboard</a></li>
+            {% else %}
+            <li><a class="dropdown-item" href="{{url_for('profile')}}">Profile</a></li>
+            {% endif %}
+
+            <li>
+              <hr class="dropdown-divider">
+            </li>
+            <li><a class="dropdown-item" href="{{url_for('logout')}}">Logout</a></li>
+          </ul>
+        </li>
+        <li class='nav-item'>
+          <button class="nav-link" id="toggle-button">Dark Mode</button>
+        </li>
+      </ul>
     </div>
-  </nav>
-  {% endif %}
+  </div>
+</nav>
+{% endif %}

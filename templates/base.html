@@ -2,64 +2,64 @@
 <html lang="pt-BR">
 
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <link rel="stylesheet" href="{{url_for('static', filename='app.css')}}">
+  <link rel="stylesheet" href="{{url_for('static', filename='app.css')}}">
 
-    <title>Fstick</title>
-    <meta name="keywords" content="Diario">
-    <meta name="description" content="Caderno virtual para registrar seus pensamentos e tarefas.">
-    <meta name="author" content="Fábio Varela">
+  <title>Fstick</title>
+  <meta name="keywords" content="Diario">
+  <meta name="description" content="Caderno virtual para registrar seus pensamentos e tarefas.">
+  <meta name="author" content="Fábio Varela">
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
 </head>
 
 <body id='body'>
-    {% include 'nav.html' %}
+  {% include 'nav.html' %}
 
-    {% with messages = get_flashed_messages() %}
+  {% with messages = get_flashed_messages() %}
 
-    {% if messages %}
+  {% if messages %}
 
-    {% for msg in messages %}
-    <div id="msg">{{msg}}</div>
-    {% endfor %}
+  {% for msg in messages %}
+  <div id="msg">{{msg}}</div>
+  {% endfor %}
 
-    {% endif %}
+  {% endif %}
 
-    {% block content %}
-    {% endblock %}
+  {% block content %}
+  {% endblock %}
 
-    {% endwith %}
+  {% endwith %}
 
-    {% include 'footer.html' %}
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
-    <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
-    <script src="{{url_for('static', filename='app.js')}}"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
-        integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
-        crossorigin="anonymous"></script>
-    <script>hljs.highlightAll();</script>
-    <script>
+  {% include 'footer.html' %}
+  <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/default.min.css">
+  <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+  <script src="{{url_for('static', filename='app.js')}}"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-w76AqPfDkMBDXo30jS1Sgez6pr3x5MlQ1ZAGC+nuZB+EYdgRZgiwxhTBTkF7CXvN"
+    crossorigin="anonymous"></script>
+  <script>hljs.highlightAll();</script>
+  <script>
 
 
-        let input = document.querySelector('input')
-        input.addEventListener('input', async function () {
-            let response = await fetch('/search?q=' + input.value)
-            let posts = await response.json()
+    let input = document.querySelector('input')
+    input.addEventListener('input', async function () {
+      let response = await fetch('/search?q=' + input.value)
+      let posts = await response.json()
 
-            console.log(posts)    
-            let html = ''
-            for (let x in posts) {
-                let title = posts[x].title.replace('<', '&lt;').replace('&', '&amp')
-                let datep = posts[x].date_posted
-                let dateu = posts[x].date_updated
-                let id = posts[x].id
-                //html += '<h5 class="card-title">' + title + '</h5>'
-                html +=`<div class="card mb-3" style="max-width: 610px;" id="page">
+      console.log(posts)
+      let html = ''
+      for (let x in posts) {
+        let title = posts[x].title.replace('<', '&lt;').replace('&', '&amp')
+        let datep = posts[x].date_posted
+        let dateu = posts[x].date_updated
+        let id = posts[x].id
+        //html += '<h5 class="card-title">' + title + '</h5>'
+        html += `<div class="card mb-3" style="max-width: 610px;" id="page">
                     <div class="row g-0">
                       <div class="col-md-4">
                         <img src="https://media.istockphoto.com/id/1140723067/photo/the-imposing-statue-of-emperor-marcus-aurelius-in-piazza-del-campidoglio-in-the-heart-of-rome.jpg?b=1&s=170667a&w=0&k=20&c=kD9u-h_a8mJuM0j73ynpGzt8bgb5nmwrPw7SvbAOZ8M=" class="img-fluid rounded-start" alt="...">
@@ -98,19 +98,12 @@
                       </div>
                     </div>
                   </div>`
-                
-            }
-            document.getElementById('content').innerHTML = html
-        })
 
-        const all = document.getElementById('page').children
+      }
+      document.getElementById('content').innerHTML = html
+    })
 
-        Array.from(children).forEach(li => {
-            li.remove()
-            
-        });
-        all.remove()
-    </script>
+  </script>
 </body>
 
 </html>

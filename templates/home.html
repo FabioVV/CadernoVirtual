@@ -1,6 +1,7 @@
 {% extends 'base.html' %}
 
 {% block content %}
+
 <input class="form-control" name="search" type="search" placeholder="Search" aria-label="Search">
 
 <div id="content">
@@ -38,13 +39,12 @@
               <input type="hidden" name="id" value="{{post['id']}}">
               <button type="submit" class="btn btn-danger">Delete</button>
             </form>
-
-
           </div>
           </p>
-          <p class="card-text"><small class="text-muted">Added at {{post.date_posted}}</small></p>
+          <p class="card-text"><small class="text-muted">Added at {{post.date_posted.strftime('%d-%m-%Y') }}</small></p>
           <hr>
-          <p class="card-text"><small class="text-muted">Last updated at {{post.date_updated}}</small></p>
+          <p class="card-text"><small class="text-muted">Last updated at {{post.date_updated.strftime('%d-%m-%Y')
+              }}</small></p>
         </div>
       </div>
     </div>
