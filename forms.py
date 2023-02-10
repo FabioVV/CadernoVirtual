@@ -20,7 +20,7 @@ class UsersForm(FlaskForm):
     username = StringField("Usuário", validators=[DataRequired()])
     email = StringField("Email", validators=[DataRequired()])
     about = TextAreaField("Sobre você...")
-    profile_pic = FileField("Imagem de perfil")
+    profile_pic = FileField("Profile image")
     password_hash = PasswordField("Senha", validators=[DataRequired(), equal_to('password_hash2', message='As senhas precisam ser iguais!')])
     password_hash2 = PasswordField("Senha novamente", validators=[DataRequired()])
     submit = SubmitField('Create account')

@@ -13,11 +13,17 @@
 
                 <div class="d-flex align-items-center h-custom-2 px-5 ms-xl-4 mt-5 pt-5 pt-xl-0 mt-xl-n5">
 
-                    <form method="post" style="width: 23rem;">
+                    <form method="post" style="width: 23rem;" enctype="multipart/form-data">
 
                         <h3 class="fw-normal mb-3 pb-3" style="letter-spacing: 1px;">Register. </h3>
                         {{ form.hidden_tag() }}
                         {{ form.csrf_token }}
+
+                        <div class="form-outline mb-4">
+
+                            {{ form.profile_pic.label(class="form-label") }}
+                            {{ form.profile_pic(class="form-control form-control-lg") }}
+                        </div>
 
                         <div class="form-outline mb-4">
 

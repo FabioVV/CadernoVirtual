@@ -1,10 +1,9 @@
 import os
+import uuid as uuid
 from datetime import datetime
 
 from flask import (Flask, flash, jsonify, redirect, render_template, request,
                    session, url_for)
-from flask_admin import Admin
-from flask_admin.contrib.sqla import ModelView
 from flask_ckeditor import CKEditor
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
@@ -12,12 +11,12 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from werkzeug.security import check_password_hash, generate_password_hash
+from werkzeug.utils import secure_filename
 
 from forms import LoginForm, Postform, SearchForm, UsersForm
 
-# Download pdf with content
+# Download pdf with content ??
 # Todo list
-# Finance helper
 # FLASK aDMIN
 
 
@@ -25,12 +24,21 @@ app = Flask(__name__)
 app.secret_key = 'secreto'
 app.config['SESSION_TYPE'] = 'filesystem'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:guerra998@localhost/caderno'
+# SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
+#    username="fabinhor",
+#    password="guerra998",
+#    hostname="fabinhor.mysql.pythonanywhere-services.com",
+#    databasename="fabinhor$caderno",
+# )
+#app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-admin = Admin(app)
 
 
-UPLOAD_FOLDER = 'static'
+UPLOAD_FOLDER = 'static/post-images'
 ckeditor = CKEditor(app)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -87,12 +95,27 @@ def register():
             if not username:
                 hsps = generate_password_hash(
                     form.password_hash.data, 'sha256')
-                user = Users(name=form.name.data, username=form.username.data,
-                             email=form.email.data, password_hash=hsps)
-                db.session.add(user)
-                db.session.commit()
-                flash('Account created!')
-                return redirect(url_for('login'))
+
+                if request.files['profile_pic']:
+                    pic = request.files['profile_pic']
+                    picfilename = secure_filename(pic.filename)
+                    picname = str(uuid.uuid1()) + "_" + picfilename
+                    saver = request.files['profile_pic']
+                    saver.save(os.path.join(
+                        app.config['UPLOAD_FOLDER'], picname))
+                    user = Users(name=form.name.data, username=form.username.data,
+                                 email=form.email.data, password_hash=hsps, profile_pic=picname)
+                    db.session.add(user)
+                    db.session.commit()
+                    flash('Account created!')
+                    return redirect(url_for('login'))
+                else:
+                    user = Users(name=form.name.data, username=form.username.data,
+                                 email=form.email.data, password_hash=hsps)
+                    db.session.add(user)
+                    db.session.commit()
+                    flash('Account created!')
+                    return redirect(url_for('login'))
 
     return render_template('register.html', form=form)
 
@@ -112,6 +135,7 @@ def newpost():
         if form.validate_on_submit():
             title = form.title.data
             content = form.content.data
+
             post = Posts(title=title, content=content,
                          poster_id=current_user.id)
             db.session.add(post)
@@ -161,11 +185,6 @@ def edit_post():
     return render_template('edit-post.html', form=form, id=post.id)
 
 
-@app.route('/index')
-def ind():
-    return render_template('index.html')
-
-
 @app.route('/search')
 def search():
     searched = request.args.get('q')
@@ -194,9 +213,14 @@ def admin():
     return render_template('admin_profile.html')
 
 
-@app.route('/admin')
+@app.route('/profile')
 @login_required
 def profile():
+    #id = current_user.id
+    # if not id:
+    #    flash('No user found!')
+    #    return redirect(url_for('index'))
+    #pr = Users.query.get_or_404(id)
     return render_template('profile.html')
 
 
@@ -211,6 +235,7 @@ class Posts(db.Model):
     title = db.Column(db.String(60), nullable=False)
     content = db.Column(db.Text)
     date_posted = db.Column(db.DateTime, default=datetime.utcnow)
+    post_pic = db.Column(db.String(380), nullable=True, unique=False)
     date_updated = db.Column(db.DateTime, default=datetime.utcnow)
     poster_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
@@ -229,10 +254,7 @@ class Users(db.Model, UserMixin):
     post_count = db.relationship('Posts', backref='poster')
 
 
-# Admin Views
-#admin.add_view(ModelView(Users, db.session))
+admin.add_view(ModelView(Users, db.session))
 
 if __name__ == '__main__':
     app.run('0.0.0.0', port=5002, debug=True)
-
-    # posts.poster_id
