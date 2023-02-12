@@ -3,9 +3,8 @@ import uuid as uuid
 from datetime import datetime
 
 from flask import (Flask, flash, jsonify, redirect, render_template, request,
-                   url_for)
-from flask_admin import Admin, AdminIndexView, expose
-from flask_admin.contrib.sqla import ModelView
+                   session, url_for)
+from flask_admin import Admin
 from flask_ckeditor import CKEditor
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
@@ -13,63 +12,48 @@ from flask_mail import Mail, Message
 from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
-from itsdangerous import Serializer
+from itsdangerous import URLSafeSerializer
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 from forms import (LoginForm, Postform, RequestResetForm, ResetPasswordForm,
                    SearchForm, UsersForm)
 
-# Download pdf with content ??
+# Download pdf with content
 # Todo list
+# Finance helper
+# FLASK aDMIN
 
 
 app = Flask(__name__)
-app.secret_key = os.urandom(24)
+app.secret_key = 'secreto'
 app.config['SESSION_TYPE'] = 'filesystem'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:guerra998@localhost/caderno'
-# SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
-#    username="fabinhor",
-#    password="guerra998",
-#    hostname="fabinhor.mysql.pythonanywhere-services.com",
-#    databasename="fabinhor$caderno",
-# )
-#app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
+    username="fabinhor",
+    password="guerra998",
+    hostname="fabinhor.mysql.pythonanywhere-services.com",
+    databasename="fabinhor$caderno",
+)
+
+app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
 app.config["MAIL_SERVER"] = 'smtp.googlemail.com'
 app.config["MAIL_PORT"] = 587
 app.config["MAIL_USE_TLS"] = True
 app.config["MAIL_USERNAME"] = 'noreplydemor@gmail.com'
 app.config["MAIL_PASSWORD"] = 'atqlzqllxmnowayq'
 
+
+UPLOAD_FOLDER = '/home/fabinhor/mysite/static/post-images'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
 mail = Mail(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
-
-
-class MyHomeView(AdminIndexView):
-
-    def is_accessible(self):
-        if current_user.is_authenticated and current_user.admin == True:
-            return True
-
-    def inaccessible_callback(self, name, **kwargs):
-        flash('You need to be an admin for that!')
-        return redirect(url_for('login'))
-
-    @expose('/')
-    def index(self):
-        return self.render('admin.html')
-
-
-admin = Admin(app, index_view=MyHomeView(), template_mode='bootstrap3')
-
-UPLOAD_FOLDER = 'static/post-images'
+admin = Admin(app)
 ckeditor = CKEditor(app)
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-
 lg = LoginManager(app)
 lg.init_app(app)
 lg.login_view = 'login'
@@ -86,10 +70,6 @@ csrf = CSRFProtect(app)
 @app.route('/', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
-
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-
     if request.method == 'POST':
         if form.validate_on_submit():
             username = Users.query.filter_by(
@@ -99,9 +79,11 @@ def login():
                 flash('Logged in!')
                 return redirect(url_for('index'))
             elif username and not check_password_hash(username.password_hash, form.password.data):
+                form.password.data = ''
                 flash('Wrong Password!')
                 return redirect(url_for('login'))
             else:
+                form.username.data = ''
                 flash('Wrong Username!')
                 return redirect(url_for('login'))
     return render_template('login.html', form=form)
@@ -118,27 +100,30 @@ def logout():
 @app.route('/register', methods=['GET', 'POST'])
 def register():
     form = UsersForm()
-    if request.method == 'POST':
 
+    if request.method == 'POST':
         if form.validate_on_submit():
             username = Users.query.filter_by(
                 username=form.username.data).first()
             if not username:
-
                 hsps = generate_password_hash(
                     form.password_hash.data, 'sha256')
 
                 if request.files['profile_pic']:
+
                     pic = request.files['profile_pic']
                     picfilename = secure_filename(pic.filename)
                     picname = str(uuid.uuid1()) + "_" + picfilename
                     saver = request.files['profile_pic']
-                    saver.save(os.path.join(
-                        app.config['UPLOAD_FOLDER'], picname))
+
                     user = Users(name=form.name.data, username=form.username.data,
                                  email=form.email.data, password_hash=hsps, profile_pic=picname)
                     db.session.add(user)
                     db.session.commit()
+
+                    saver.save(os.path.join(
+                        app.config['UPLOAD_FOLDER'], picname))
+
                     flash('Account created!')
                     return redirect(url_for('login'))
                 else:
@@ -146,9 +131,13 @@ def register():
                                  email=form.email.data, password_hash=hsps)
                     db.session.add(user)
                     db.session.commit()
+
                     flash('Account created!')
                     return redirect(url_for('login'))
-
+    form.name.data = ''
+    form.username.data = ''
+    form.email.data = ''
+    password_hash = ''
     return render_template('register.html', form=form)
 
 
@@ -167,7 +156,6 @@ def newpost():
         if form.validate_on_submit():
             title = form.title.data
             content = form.content.data
-
             post = Posts(title=title, content=content,
                          poster_id=current_user.id)
             db.session.add(post)
@@ -239,14 +227,15 @@ def post():
         return render_template('post.html', post=post)
 
 
+@app.route('/admin')
+@login_required
+def admin():
+    return render_template('admin_profile.html')
+
+
 @app.route('/profile')
 @login_required
 def profile():
-    #id = current_user.id
-    # if not id:
-    #    flash('No user found!')
-    #    return redirect(url_for('index'))
-    #pr = Users.query.get_or_404(id)
     return render_template('profile.html')
 
 
@@ -280,12 +269,12 @@ class Users(db.Model, UserMixin):
     post_count = db.relationship('Posts', backref='poster')
 
     def get_token(self, expires=1800):
-        s = Serializer(app.config['SECRET_KEY'])
+        s = URLSafeSerializer(app.config['SECRET_KEY'], "auth")
         return s.dumps({'user_id': self.id})
 
     @staticmethod
     def verify_token(token):
-        s = Serializer(app.config['SECRET_KEY'])
+        s = URLSafeSerializer(app.config['SECRET_KEY'], "auth")
         try:
             user_id = s.loads(token)['user_id']
         except:
@@ -345,19 +334,3 @@ If you did not make this request, please ignore this email and no changes will b
     """
     mail.send(msg)
 ##
-
-
-class adminModelView(ModelView):
-    def is_accessible(self):
-        if current_user.is_authenticated and current_user.admin == True:
-            return True
-
-    def inaccessible_callback(self, name, **kwargs):
-        flash('You need to be an admin for that!')
-        return redirect(url_for('login'))
-
-
-admin.add_view(adminModelView(Users, db.session))
-admin.add_view(adminModelView(Posts, db.session))
-if __name__ == '__main__':
-    app.run('0.0.0.0', port=5002, debug=True)
