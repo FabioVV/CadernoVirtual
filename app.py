@@ -7,6 +7,10 @@ from flask import (Flask, flash, jsonify, redirect, render_template, request,
 from flask_admin import Admin, AdminIndexView, expose
 from flask_admin.contrib.sqla import ModelView
 from flask_ckeditor import CKEditor
+from flask_dance.consumer import oauth_authorized
+from flask_dance.consumer.storage.sqla import (OAuthConsumerMixin,
+                                               SQLAlchemyStorage)
+from flask_dance.contrib.github import github, make_github_blueprint
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
 from flask_mail import Mail, Message
@@ -14,6 +18,7 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from itsdangerous import URLSafeSerializer
+from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
@@ -22,8 +27,6 @@ from forms import (LoginForm, Postform, RequestResetForm, ResetPasswordForm,
 
 # Imports/dependencies up here
 
-
-# TODO
 
 # Download pdf with content
 # Todo list
@@ -49,7 +52,7 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 #    password="guerra998",
 #    hostname="fabinhor.mysql.pythonanywhere-services.com",
 #    databasename="fabinhor$caderno",)
-#app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
+# app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 
 
 # Mail configs
@@ -74,6 +77,8 @@ csrf = CSRFProtect(app)
 
 
 # Flask ADMIN config
+
+
 class MyHomeView(AdminIndexView):
 
     def is_accessible(self):
@@ -130,10 +135,7 @@ If you did not make this request, please ignore this email and no changes will b
 ##
 
 
-# ROUTES START HERE
-
-
-@app.route('/', methods=['GET', 'POST'])
+@ app.route('/', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
 
@@ -160,15 +162,15 @@ def login():
     return render_template('login.html', form=form)
 
 
-@app.route('/logout', methods=['GET', 'POST'])
-@login_required
+@ app.route('/logout', methods=['GET', 'POST'])
+@ login_required
 def logout():
     logout_user()
     flash('Logged out')
     return redirect('/')
 
 
-@app.route('/register', methods=['GET', 'POST'])
+@ app.route('/register', methods=['GET', 'POST'])
 def register():
     form = UsersForm()
 
@@ -214,14 +216,14 @@ def register():
     return render_template('register.html', form=form)
 
 
-@app.route('/home', methods=['GET', 'POST'])
-@login_required
+@ app.route('/home', methods=['GET', 'POST'])
+@ login_required
 def index():
     pos = Posts.query.filter_by(poster_id=current_user.id)
     return render_template('home.html', post=pos)
 
 
-@app.route('/new-post', methods=['GET', 'POST'])
+@ app.route('/new-post', methods=['GET', 'POST'])
 @login_required
 def newpost():
     form = Postform()
@@ -239,7 +241,7 @@ def newpost():
     return render_template('new-post.html', form=form)
 
 
-@app.route('/delete-post', methods=['POST'])
+@ app.route('/delete-post', methods=['POST'])
 @login_required
 def delete_post():
 
@@ -255,7 +257,7 @@ def delete_post():
         return redirect(url_for('index'))
 
 
-@app.route('/edit-post', methods=['GET', 'POST'])
+@ app.route('/edit-post', methods=['GET', 'POST'])
 def edit_post():
     form = Postform()
     id = request.form.get('id')
@@ -278,8 +280,8 @@ def edit_post():
     return render_template('edit-post.html', form=form, id=post.id)
 
 
-@app.route('/post', methods=['POST'])
-@login_required
+@ app.route('/post', methods=['POST'])
+@ login_required
 def post():
     id = request.form.get("id")
     post = Posts.query.filter_by(id=id).first()
@@ -287,13 +289,13 @@ def post():
         return render_template('post.html', post=post)
 
 
-@app.route('/profile')
-@login_required
+@ app.route('/profile')
+@ login_required
 def profile():
     return render_template('profile.html')
 
 
-@app.route('/search')
+@ app.route('/search')
 def search():
     searched = request.args.get('q')
 
@@ -307,7 +309,7 @@ def search():
 
 
 # JINJA2 Configuration (For search)
-@app.context_processor
+@ app.context_processor
 def base():
     form = SearchForm()
     return dict(form=form)
@@ -326,7 +328,7 @@ class Posts(db.Model):
 
 class Users(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(50), nullable=False, unique=True)
+    name = db.Column(db.String(50), nullable=False, unique=False)
     username = db.Column(db.String(28), nullable=False, unique=True)
     email = db.Column(db.String(70), nullable=False, unique=True)
     about = db.Column(db.Text(260), nullable=True)
@@ -343,7 +345,7 @@ class Users(db.Model, UserMixin):
         return s.dumps({'user_id': self.id})
 
     # Method to verify the token
-    @staticmethod
+    @ staticmethod
     def verify_token(token):
         s = URLSafeSerializer(app.config['SECRET_KEY'], "auth")
         try:
@@ -355,7 +357,7 @@ class Users(db.Model, UserMixin):
 
 
 # PASSWORD RESET ROUTES
-@app.route('/reset_password', methods=['GET', 'POST'])
+@ app.route('/reset_password', methods=['GET', 'POST'])
 def reset_request():
     if current_user.is_authenticated:
         return redirect(url_for('index'))
@@ -370,7 +372,7 @@ def reset_request():
     return render_template('reset_request.html', form=form)
 
 
-@app.route('/reset_password/<token>', methods=['GET', 'POST'])
+@ app.route('/reset_password/<token>', methods=['GET', 'POST'])
 def reset_password(token):
     if current_user.is_authenticated:
         return redirect(url_for('index'))
