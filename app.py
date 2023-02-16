@@ -7,10 +7,6 @@ from flask import (Flask, flash, jsonify, redirect, render_template, request,
 from flask_admin import Admin, AdminIndexView, expose
 from flask_admin.contrib.sqla import ModelView
 from flask_ckeditor import CKEditor
-from flask_dance.consumer import oauth_authorized
-from flask_dance.consumer.storage.sqla import (OAuthConsumerMixin,
-                                               SQLAlchemyStorage)
-from flask_dance.contrib.github import github, make_github_blueprint
 from flask_login import (LoginManager, UserMixin, current_user, login_required,
                          login_user, logout_user)
 from flask_mail import Mail, Message
@@ -18,7 +14,6 @@ from flask_migrate import Migrate
 from flask_sqlalchemy import SQLAlchemy
 from flask_wtf.csrf import CSRFProtect
 from itsdangerous import URLSafeSerializer
-from sqlalchemy.orm.exc import NoResultFound
 from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
@@ -46,14 +41,6 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:guerra998@localhos
 app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-# SQL FOR PRODUCTION ON PYTHONANYWERE
-# SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
-#    username="fabinhor",
-#    password="guerra998",
-#    hostname="fabinhor.mysql.pythonanywhere-services.com",
-#    databasename="fabinhor$caderno",)
-# app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
-
 
 # Mail configs
 app.config["MAIL_SERVER"] = 'smtp.googlemail.com'
@@ -64,7 +51,7 @@ app.config["MAIL_PASSWORD"] = 'atqlzqllxmnowayq'
 
 
 # Image uploading directory
-UPLOAD_FOLDER = '/home/fabinhor/mysite/static/post-images'
+UPLOAD_FOLDER = 'static/post-images'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 
@@ -271,6 +258,7 @@ def edit_post():
             post.date_updated = datetime.utcnow()
             db.session.add(post)
             db.session.commit()
+
             flash('Entry edited.')
             return redirect(url_for('index'))
 

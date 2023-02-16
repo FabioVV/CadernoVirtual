@@ -17,7 +17,7 @@ const toggleButton = document.getElementById("toggle-button");
 
 
 const body = document.body;
-const div = document.querySelectorAll('div')
+const div = document.querySelectorAll('*')
 
 
 // Add an event listener to the toggle button that switches the body's class
@@ -40,5 +40,4 @@ toggleButton.addEventListener("click", function() {
         e.classList.add("dark-mode")
     }
   });
-
 });
